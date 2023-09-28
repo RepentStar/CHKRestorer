@@ -44,11 +44,12 @@ def check_type(files: List[str]) -> List[Tuple[str, Optional[str]]]:
     result = []
     for file in files:
         kind = filetype.guess(file)
+        file_name = os.path.basename(file)
         if kind is None:
-            result.append((file, None))
+            result.append((file_name, None))
             continue
         else:
-            result.append((file, kind.extension))
+            result.append((file_name, kind.extension))
     return result
 
 
@@ -80,6 +81,27 @@ def rename(path: str = "./") -> Tuple[List[str], List[str]]:
     return invalid_files, available_files
 
 
+def get_custom_path() -> str:
+    """Returns a custom path based on command line arguments.
+
+    Args:
+        None
+
+    Returns:
+        str: The custom path or "./" if no valid directory path is found.
+    """
+    logging.debug(sys.argv)
+
+    if len(sys.argv) == 1:
+        return "./"
+
+    for path in sys.argv:
+        if os.path.isdir(path):
+            return path
+
+    return "./"
+
+
 def main() -> None:
     """
     Refactored function to improve readability and maintainability.
@@ -96,10 +118,11 @@ def main() -> None:
         stream=sys.stdout,
     )
     logger = logging.getLogger()
-    # logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
+    logger.disabled = True
 
     try:
-        change_list, invalid_files = rename()
+        change_list, invalid_files = rename(get_custom_path())
         print(f"\033[34mChange List:{change_list}\033[0m")
         print("\033[32mDone!\033[0m")
         print(f"\033[31mUnrecognized file:{invalid_files}\033[0m")
