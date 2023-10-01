@@ -5,6 +5,9 @@
 """
 
 from utils import *
+import logging
+import rich
+from rich.logging import RichHandler
 
 
 def main() -> None:
@@ -18,23 +21,32 @@ def main() -> None:
         None
     """
     logging.basicConfig(
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        stream=sys.stdout,
+        handlers=[RichHandler(rich_tracebacks=True)],
     )
-    logger = logging.getLogger()
+    logger = logging.getLogger("rich")
     logger.setLevel(logging.DEBUG)
-    logger.disabled = True
-
+    logger.disabled = False
+    console = rich.get_console()
+    print("不删除任何文件，只改变文件名。")
     try:
-        change_list, invalid_files = rename(get_custom_path())
-        cli_print_yellow(f"Change List:{change_list}")
-        cli_print_green("Done!")
-        cli_print_red(f"Unrecognized file:{invalid_files}")
+        change_list, invalid_files = rename(logger, get_custom_path(logger))
+        console.log(
+            "Change List:{change_list}".format(change_list=change_list), style="yellow"
+        )
+        console.log("Done!", style="green")
+        console.log(
+            "Unrecognized file:{invalid_files}".format(
+                invalid_files=invalid_files, style="bold red"
+            ),
+        )
     except:
-        print("Error!Please open the logger to check.")
+        console.log(
+            "[bold red]Error![/bold red] Please open the logger to check.",
+            log_locals=True,
+        )
 
 
 if __name__ == "__main__":
-    cli_print_yellow("不删除任何文件，只改变文件名。")
     main()

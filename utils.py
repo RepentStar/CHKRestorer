@@ -2,10 +2,9 @@ import os
 from typing import List, Tuple, Optional
 import filetype
 import sys
-import logging
 
 
-def get_files(path: str) -> List[str]:
+def get_files(path: str, logger) -> List[str]:
     """
     Get all CHK files under the specified path.
 
@@ -17,7 +16,7 @@ def get_files(path: str) -> List[str]:
     """
     file_list = []
     for root, dirs, files in os.walk(path):
-        logging.debug(f"Files_in_path: {files}")
+        logger.debug(f"Files_in_path: {files}")
         for file in files:
             if file.endswith(".chk") or file.endswith(".CHK"):
                 file_list.append(os.path.join(root, file))
@@ -47,7 +46,10 @@ def check_type(files: List[str]) -> List[Tuple[str, Optional[str]]]:
     return result
 
 
-def rename(path: str = "./") -> Tuple[List[str], List[str]]:
+def rename(
+    logger,
+    path: str = "./",
+) -> Tuple[List[str], List[str]]:
     """
     Renames files in the given path by appending their type to the filename.
 
@@ -59,11 +61,12 @@ def rename(path: str = "./") -> Tuple[List[str], List[str]]:
         the names of invalid files that could not be renamed. The second list contains the
         names of the successfully renamed files.
     """
+    logger = logger
     invalid_files = []
     available_files = []
-    logging.debug(f"Path: {path}")
-    files = get_files(path)
-    logging.debug(f"Chk_files: {files}")
+    logger.debug(f"Path: {path}")
+    files = get_files(path, logger)
+    logger.debug(f"Chk_files: {files}")
 
     for file, type in check_type(files):
         if type is None:
@@ -75,7 +78,7 @@ def rename(path: str = "./") -> Tuple[List[str], List[str]]:
     return invalid_files, available_files
 
 
-def get_custom_path() -> str:
+def get_custom_path(logger) -> str:
     """Returns a custom path based on command line arguments.
 
     Args:
@@ -84,7 +87,8 @@ def get_custom_path() -> str:
     Returns:
         str: The custom path or "./" if no valid directory path is found.
     """
-    logging.debug(sys.argv)
+    logger = logger
+    logger.debug(sys.argv)
 
     if len(sys.argv) == 1:
         return "./"
@@ -94,13 +98,3 @@ def get_custom_path() -> str:
             return path
 
     return "./"
-
-
-def cli_print_red(text):
-    print("\033[31m" + text + "\033[0m")
-
-def cli_print_green(text):
-    print("\033[32m" + text + "\033[0m")
-    
-def cli_print_yellow(text):
-    print("\033[33m" + text + "\033[0m")
