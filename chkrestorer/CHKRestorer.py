@@ -8,7 +8,7 @@ from rich.logging import RichHandler
 
 
 class CHKRestorer:
-    def __init__(self, path=None, debug: bool = False) -> None:
+    def __init__(self, path=None, debug=False):
         logging.basicConfig(
             format="%(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
@@ -20,16 +20,7 @@ class CHKRestorer:
         self.console = rich.get_console()
         self.path = path
 
-    def _get_files(self, path: str) -> List[str]:
-        """
-        Get all CHK files under the specified path.
-
-        Args:
-            path (str): The path to search for CHK files.
-
-        Returns:
-            List[str]: A list of file paths for the CHK files found.
-        """
+    def _get_files(self, path):
         file_list = []
         for root, dirs, files in os.walk(path):
             self.logger.debug(f"Files_in_path: {files}")
@@ -38,17 +29,7 @@ class CHKRestorer:
                     file_list.append(os.path.join(root, file))
         return file_list
 
-    def _check_type(self, files: List[str]) -> List[Tuple[str, Optional[str]]]:
-        """
-        Check the type of each file in the given list.
-
-        Args:
-            files: A list of file paths.
-
-        Returns:
-            A list of tuples containing the file path and its corresponding extension.
-            If the extension cannot be determined, the extension will be None.
-        """
+    def _check_type(self, files):
         result = []
         for file in files:
             kind = filetype.guess(file)
@@ -60,25 +41,14 @@ class CHKRestorer:
                 result.append((file_name, kind.extension))
         return result
 
-    def _rename(self) -> Tuple[List[str], List[str]]:
-        """
-        Renames files in the given path by appending their type to the filename.
-
-        Args:
-            path (str): The path where the files are located. Defaults to current directory.
-
-        Returns:
-            Tuple[List[str], List[str]]: A tuple containing two lists. The first list contains
-            the names of invalid files that could not be renamed. The second list contains the
-            names of the successfully renamed files.
-        """
+    def _rename(self):
         invalid_files = []
         available_files = []
         path = self.path
         self.logger.debug(f"Path: {path}")
         files = self._get_files(path)
         self.logger.debug(f"Chk_files: {files}")
-        os.chdir(path)
+        os.chdir(path)  # type: ignore
 
         for file, type in self._check_type(files):
             if type is None:
@@ -89,15 +59,7 @@ class CHKRestorer:
 
         return invalid_files, available_files
 
-    def _get_custom_path(self) -> str:
-        """Returns a custom path based on command line arguments.
-
-        Args:
-            None
-
-        Returns:
-            str: The custom path or "./" if no valid directory path is found.
-        """
+    def _get_custom_path(self):
         self.logger.debug(sys.argv)
 
         if len(sys.argv) == 1 and self.path is None:
@@ -124,9 +86,8 @@ class CHKRestorer:
             )
             self.console.log("Done!", style="green")
             self.console.log(
-                "Unrecognized file:{invalid_files}".format(
-                    invalid_files=invalid_files, style="bold red"
-                ),
+                "Unrecognized file:{invalid_files}".format(invalid_files=invalid_files),
+                style="bold red",
             )
         except Exception as err:
             self.console.log(
